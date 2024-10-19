@@ -4,7 +4,6 @@ import pickle
 import json
 import numpy as np
 import os
-import tempfile
 from starlette.requests import Request
 from typing import Dict
 
@@ -29,10 +28,8 @@ model.fit(train_x, train_y)
 print("MSE:", mean_squared_error(model.predict(val_x), val_y))
 
 # Save the model and label to file
-MODEL_PATH = os.path.join(
-    tempfile.gettempdir(), "iris_model_gradient_boosting_classifier.pkl"
-)
-LABEL_PATH = os.path.join(tempfile.gettempdir(), "iris_labels.json")
+MODEL_PATH = os.path.join("./iris_model_gradient_boosting_classifier.pkl")
+LABEL_PATH = os.path.join("./iris_labels.json")
 
 with open(MODEL_PATH, "wb") as f:
     pickle.dump(model, f)
