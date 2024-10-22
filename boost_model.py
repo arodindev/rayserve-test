@@ -13,10 +13,10 @@ LABEL_PATH = os.path.join("./iris_labels.json")
     
 @serve.deployment
 class BoostingModel:
-    def __init__(self, model_path: str, label_path: str):
-        with open(model_path, "rb") as f:
+    def __init__(self):
+        with open(MODEL_PATH, "rb") as f:
             self.model = pickle.load(f)
-        with open(label_path) as f:
+        with open(LABEL_PATH) as f:
             self.label_list = json.load(f)
 
     async def __call__(self, starlette_request: Request) -> Dict:
@@ -33,4 +33,4 @@ class BoostingModel:
         human_name = self.label_list[prediction]
         return {"result": human_name}
     
-boosting_model = BoostingModel.bind(MODEL_PATH, LABEL_PATH)
+boosting_model = BoostingModel.bind()
