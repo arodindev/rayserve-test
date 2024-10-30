@@ -12,7 +12,7 @@ app = FastAPI()
 class Translator:
     def __init__(self):
         # Load model
-        self.model = pipeline("translation_en_to_fr", model="t5-small")
+        self.model = pipeline("translation_en_to_de", model="t5-small")
 
     @app.post("/")
     def translate(self, text: str) -> str:
