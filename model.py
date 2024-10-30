@@ -1,31 +1,28 @@
-from config import MODEL_PATH, LABEL_PATH
-import pickle
-import json
-import numpy as np
-from sklearn.datasets import load_iris
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import mean_squared_error
+import ray
+from ray import serve
+from fastapi import FastAPI
+
+from transformers import pipeline
+
+app = FastAPI()
 
 
-model = GradientBoostingClassifier()
+@serve.deployment(num_replicas=2, ray_actor_options={"num_cpus": 0.2, "num_gpus": 0})
+@serve.ingress(app)
+class Translator:
+    def __init__(self):
+        # Load model
+        self.model = pipeline("translation_en_to_fr", model="t5-small")
 
-iris_dataset = load_iris()
-data, target, target_names = (
-    iris_dataset["data"],
-    iris_dataset["target"],
-    iris_dataset["target_names"],
-)
+    @app.post("/")
+    def translate(self, text: str) -> str:
+        # Run inference
+        model_output = self.model(text)
 
-np.random.shuffle(data), np.random.shuffle(target)
-train_x, train_y = data[:100], target[:100]
-val_x, val_y = data[100:], target[100:]
+        # Post-process output to return only the translation text
+        translation = model_output[0]["translation_text"]
 
-model.fit(train_x, train_y)
-print("MSE:", mean_squared_error(model.predict(val_x), val_y))
+        return translation
 
-with open(MODEL_PATH, "wb") as f:
-    pickle.dump(model, f)
-with open(LABEL_PATH, "w") as f:
-    json.dump(target_names.tolist(), f)
-    
-    
+
+translator_app = Translator.bind()
